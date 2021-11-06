@@ -129,6 +129,41 @@ func main() {
 
 					fmt.Println("success")
 					fmt.Printf("ID: %s, Fullname: %s, Email: %s, Reaction: %s\n", userInfo.ID, userInfo.Profile.RealName, userInfo.Profile.Email, reaction)
+				case *slackevents.ReactionRemovedEvent:
+					reaction := event.Reaction // スタンプ名
+					user := event.User         // ユーザーID
+
+					userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
+
+					if err != nil {
+						log.Println(err)
+					}
+
+					snapshot, firestoreErr := client.Collection("users").Doc(userInfo.ID).Get(ctx)
+
+					if firestoreErr != nil {
+						fmt.Println("Failed adding alovelace:", firestoreErr)
+					}
+
+					// スタンプをデリート
+					if snapshot.Data() != nil {
+						getUserFromFirestore := snapshot.Data()
+
+						if res, state := getUserFromFirestore["technology"].([]interface{}); state {
+							technology := []string{}
+							for _, v := range res {
+								if v != reaction {
+									technology = append(technology, v.(string))
+								}
+							}
+
+							client.Collection("users").Doc(userInfo.ID).Set(ctx, map[string]interface{} {
+								"technology": technology,
+							}, firestore.MergeAll)
+						}
+						fmt.Println("スタンプ消したルート")
+					}
+
 				case *slackevents.AppMentionEvent: // メンションイベント
 
 					// スペースを区切り文字として配列に格納
