@@ -42,7 +42,7 @@ func main() {
 	api := slack.New(os.Getenv("SLACK_TOKEN"))
 
 	// ルートにアクセスがあった時の処理
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/slack/events", func(w http.ResponseWriter, r *http.Request) {
 		// リクエスト内容を取得
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -127,7 +127,6 @@ func main() {
 						fmt.Println("Failed adding alovelace:", err)
 					}
 
-					fmt.Println("success")
 					fmt.Printf("ID: %s, Fullname: %s, Email: %s, Reaction: %s\n", userInfo.ID, userInfo.Profile.RealName, userInfo.Profile.Email, reaction)
 				case *slackevents.ReactionRemovedEvent:
 					reaction := event.Reaction // スタンプ名
@@ -193,6 +192,13 @@ func main() {
 							return
 						}
 					}
+        case "techTag":
+          if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで教えてね！！！！！！！！", false)); err != nil {
+            log.Println(err)
+            w.WriteHeader(http.StatusInternalServerError)
+            return
+          }
+				}
 			}
 		}
 	})
