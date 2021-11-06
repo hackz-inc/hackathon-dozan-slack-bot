@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"github.com/joho/godotenv"
 	"github.com/slack-go/slack"
@@ -31,7 +32,6 @@ func main() {
 	if err != nil {
 		fmt.Println("error getting Auth client: \n", err)
 	}
-
 	// ======== ここまでが諸岡コード！！！！！！！！！ ==========
 	
 	godotenv.Load(".env")
@@ -96,45 +96,24 @@ func main() {
 						fmt.Println("Failed adding alovelace:", firestoreErr)
 					}
 
+					// 既にユーザーデータがある場合は、スタンプだけをアップデート
 					if snapshot.Data() != nil {
 						getUserFromFirestore := snapshot.Data()
-						fmt.Println(getUserFromFirestore)
-						fmt.Println(getUserFromFirestore["technology"])
-						// if res, state := getUserFromFirestore["technology"].([]string); state {
-						// 	fmt.Println("test", state)
-						// 	fmt.Println("test", res)
-						// }
 
-						// fmt.Println("test", getUserFromFirestore)
+						if res, state := getUserFromFirestore["technology"].([]interface{}); state {
+							technology := append(res, reaction)
 
-						res, state := getUserFromFirestore["technology"].([]string)
-							fmt.Println("test", state)
-							fmt.Println("test", res)
-						// fmt.Println("test", state)
-						// fmt.Println("test", res)
-
-						// var initialTechnology []string
-						// technology := append(res, reaction)
-						
-						// fmt.Println("test", technology)
+							client.Collection("users").Doc(userInfo.ID).Set(ctx, map[string]interface{} {
+								"technology": technology,
+							}, firestore.MergeAll)
+						}
+						fmt.Println("データあるルート")
+						break
 					}
 
 					var initialTechnology []string
 					technology := append(initialTechnology, reaction)
-
-					// type User struct {
-					// 	id          string
-					// 	userName    string
-					// 	email       string
-					// 	technology []string
-					// }
-
-					// user := User {
-					// 	userInfo.ID,
-					// 	userInfo.Profile.RealName,
-					// 	userInfo.Profile.Email,
-					// 	technology,
-					// }
+					fmt.Println("データなしルート")
 
 					// データ追加
 					_, err = client.Collection("users").Doc(userInfo.ID).Set(ctx, map[string]interface{} {
