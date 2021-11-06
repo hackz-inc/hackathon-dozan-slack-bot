@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,12 +10,61 @@ import (
 	"os"
 	"strings"
 
+	firebase "firebase.google.com/go"
 	"github.com/joho/godotenv"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+	"google.golang.org/api/option"
 )
 
+type User struct {
+	id    string
+	userName  string
+	email   string
+	technology []string
+}
+
 func main() {
+	// ======== ここからが諸岡コード！！！！！！！！！ ==========
+		// ctxを再利用する為下記のように書きます。
+	ctx := context.Background()
+	sa := option.WithCredentialsFile("serviceAccountKey.json")
+	app, err := firebase.NewApp(ctx, nil, sa)
+	if err != nil {
+		fmt.Println("接続エラー。")
+	}
+
+	client, err := app.Firestore(ctx)
+	if err != nil {
+		fmt.Println("error getting Auth client: \n", err)
+	}
+
+		var initialTechnology []string
+	
+	res := "vue"
+	technology := append(initialTechnology, res)
+
+	user := User {
+		"kbnkfagoa",
+		"keisuke morooka",
+		"hogehoge@gmail.com",
+		technology,
+	}
+
+	// データ追加
+	_, err = client.Collection("users").Doc(user.id).Set(ctx, map[string]interface{} {
+		"id":  user.id,
+		"userName": user.userName,
+		"email":   user.email,
+		"technology":   user.technology,
+	})
+
+	if err != nil {
+		log.Fatalf("Failed adding alovelace: %v", err)
+	}
+
+	// ======== ここまでが諸岡コード！！！！！！！！！ ==========
+	
 	godotenv.Load(".env")
 
 	// SlackClientの構築
