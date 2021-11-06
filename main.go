@@ -18,6 +18,8 @@ func main() {
 	godotenv.Load(".env")
 
 	// SlackClientの構築
+
+	// ======== .envファイルにSLACK_TOKEN追加してね！！！！！！！！！ ==========
 	api := slack.New(os.Getenv("SLACK_TOKEN"))
 
 	// ルートにアクセスがあった時の処理
@@ -59,6 +61,17 @@ func main() {
 
 			// イベントタイプで分岐
 			switch event := innerEvent.Data.(type) {
+			case *slackevents.ReactionAddedEvent:
+				reaction := event.Reaction // スタンプ名
+				user := event.User         // ユーザーID
+
+				userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
+
+				if err != nil {
+					log.Println(err)
+				}
+
+				fmt.Printf("ID: %s, Fullname: %s, Email: %s, Reaction: %s\n", userInfo.ID, userInfo.Profile.RealName, userInfo.Profile.Email, reaction)
 			case *slackevents.AppMentionEvent: // メンションイベント
 
 				// スペースを区切り文字として配列に格納
