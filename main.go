@@ -73,7 +73,7 @@ func main() {
 	api := slack.New(os.Getenv("SLACK_TOKEN"))
 
 	// ルートにアクセスがあった時の処理
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/slack/events", func(w http.ResponseWriter, r *http.Request) {
 		// リクエスト内容を取得
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -136,10 +136,6 @@ func main() {
 				// 送信されたテキストを取得
 				command := message[1]
 
-				if err != nil {
-					log.Println(err)
-				}
-
 				// 送信元のユーザIDを取得
 				user := event.User
 
@@ -150,6 +146,12 @@ func main() {
 						w.WriteHeader(http.StatusInternalServerError)
 						return
 					}
+        case "techTag":
+          if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで教えてね！！！！！！！！", false)); err != nil {
+            log.Println(err)
+            w.WriteHeader(http.StatusInternalServerError)
+            return
+          }
 				}
 			}
 		}
