@@ -17,16 +17,9 @@ import (
 	"google.golang.org/api/option"
 )
 
-type User struct {
-	id    string
-	userName  string
-	email   string
-	technology []string
-}
-
 func main() {
 	// ======== ここからが諸岡コード！！！！！！！！！ ==========
-		// ctxを再利用する為下記のように書きます。
+	// ctxを再利用する為下記のように書きます。
 	ctx := context.Background()
 	sa := option.WithCredentialsFile("serviceAccountKey.json")
 	app, err := firebase.NewApp(ctx, nil, sa)
@@ -37,30 +30,6 @@ func main() {
 	client, err := app.Firestore(ctx)
 	if err != nil {
 		fmt.Println("error getting Auth client: \n", err)
-	}
-
-		var initialTechnology []string
-	
-	res := "vue"
-	technology := append(initialTechnology, res)
-
-	user := User {
-		"kbnkfagoa",
-		"keisuke morooka",
-		"hogehoge@gmail.com",
-		technology,
-	}
-
-	// データ追加
-	_, err = client.Collection("users").Doc(user.id).Set(ctx, map[string]interface{} {
-		"id":  user.id,
-		"userName": user.userName,
-		"email":   user.email,
-		"technology":   user.technology,
-	})
-
-	if err != nil {
-		log.Fatalf("Failed adding alovelace: %v", err)
 	}
 
 	// ======== ここまでが諸岡コード！！！！！！！！！ ==========
@@ -111,46 +80,105 @@ func main() {
 
 			// イベントタイプで分岐
 			switch event := innerEvent.Data.(type) {
-			case *slackevents.ReactionAddedEvent:
-				reaction := event.Reaction // スタンプ名
-				user := event.User         // ユーザーID
+				case *slackevents.ReactionAddedEvent:
+					reaction := event.Reaction // スタンプ名
+					user := event.User         // ユーザーID
 
-				userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
+					userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
 
-				if err != nil {
-					log.Println(err)
-				}
-
-				fmt.Printf("ID: %s, Fullname: %s, Email: %s, Reaction: %s\n", userInfo.ID, userInfo.Profile.RealName, userInfo.Profile.Email, reaction)
-			case *slackevents.AppMentionEvent: // メンションイベント
-
-				// スペースを区切り文字として配列に格納
-				message := strings.Split(event.Text, " ")
-				fmt.Printf("message %v\n", message)
-				// テキストが送信されていない場合は終了
-				if len(message) < 2 {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				// 送信されたテキストを取得
-				command := message[1]
-
-				if err != nil {
-					log.Println(err)
-				}
-
-				// 送信元のユーザIDを取得
-				user := event.User
-
-				switch command {
-				case "hello": // helloが送られた場合
-					if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("<@"+user+"> world", false)); err != nil {
+					if err != nil {
 						log.Println(err)
-						w.WriteHeader(http.StatusInternalServerError)
+					}
+
+					snapshot, firestoreErr := client.Collection("users").Doc(userInfo.ID).Get(ctx)
+
+					if firestoreErr != nil {
+						fmt.Println("Failed adding alovelace:", firestoreErr)
+					}
+
+					if snapshot.Data() != nil {
+						getUserFromFirestore := snapshot.Data()
+						fmt.Println(getUserFromFirestore)
+						fmt.Println(getUserFromFirestore["technology"])
+						// if res, state := getUserFromFirestore["technology"].([]string); state {
+						// 	fmt.Println("test", state)
+						// 	fmt.Println("test", res)
+						// }
+
+						// fmt.Println("test", getUserFromFirestore)
+
+						res, state := getUserFromFirestore["technology"].([]string)
+							fmt.Println("test", state)
+							fmt.Println("test", res)
+						// fmt.Println("test", state)
+						// fmt.Println("test", res)
+
+						// var initialTechnology []string
+						// technology := append(res, reaction)
+						
+						// fmt.Println("test", technology)
+					}
+
+					var initialTechnology []string
+					technology := append(initialTechnology, reaction)
+
+					// type User struct {
+					// 	id          string
+					// 	userName    string
+					// 	email       string
+					// 	technology []string
+					// }
+
+					// user := User {
+					// 	userInfo.ID,
+					// 	userInfo.Profile.RealName,
+					// 	userInfo.Profile.Email,
+					// 	technology,
+					// }
+
+					// データ追加
+					_, err = client.Collection("users").Doc(userInfo.ID).Set(ctx, map[string]interface{} {
+						"id":  userInfo.ID,
+						"userName": userInfo.Profile.RealName,
+						"email": userInfo.Profile.Email,
+						"technology": technology,
+					})
+
+					if(err != nil) {
+						fmt.Println("Failed adding alovelace:", err)
+					}
+
+					fmt.Println("success")
+					fmt.Printf("ID: %s, Fullname: %s, Email: %s, Reaction: %s\n", userInfo.ID, userInfo.Profile.RealName, userInfo.Profile.Email, reaction)
+				case *slackevents.AppMentionEvent: // メンションイベント
+
+					// スペースを区切り文字として配列に格納
+					message := strings.Split(event.Text, " ")
+					fmt.Printf("message %v\n", message)
+					// テキストが送信されていない場合は終了
+					if len(message) < 2 {
+						w.WriteHeader(http.StatusBadRequest)
 						return
 					}
-				}
+
+					// 送信されたテキストを取得
+					command := message[1]
+
+					if err != nil {
+						log.Println(err)
+					}
+
+					// 送信元のユーザIDを取得
+					user := event.User
+
+					switch command {
+					case "hello": // helloが送られた場合
+						if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("<@"+user+"> world", false)); err != nil {
+							log.Println(err)
+							w.WriteHeader(http.StatusInternalServerError)
+							return
+						}
+					}
 			}
 		}
 	})
