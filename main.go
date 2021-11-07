@@ -34,11 +34,12 @@ func main() {
 	}
 
 	// SlackClientの構築
-	// ======== .envファイルにSLACK_TOKEN追加してね！！！！！！！！！ ==========
+	// ======== .envファイルにSLACK_TOKENと、BOT_IDを追加してね！！！！！！！！！ ==========
 	godotenv.Load(".env")
 	api := slack.New(os.Getenv("SLACK_TOKEN"))
+	botId := os.Getenv("BOT_ID")
 
-	// ルートにアクセスがあった時の処理
+	// イベントがあった時の処理
 	http.HandleFunc("/slack/events", func(w http.ResponseWriter, r *http.Request) {
 		// リクエスト内容を取得
 		body, err := ioutil.ReadAll(r.Body)
@@ -85,6 +86,12 @@ func main() {
 					case *slackevents.ReactionAddedEvent:
 						reaction := event.Reaction // スタンプ名
 						user := event.User         // ユーザーID
+						itemUser := event.ItemUser // 投稿者
+
+						if botId != itemUser {
+							log.Printf("Botに対してのスタンプじゃあねぇなあ！")
+							return
+						}
 
 						userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
 						if err != nil {
@@ -140,6 +147,12 @@ func main() {
 					case *slackevents.ReactionRemovedEvent:
 						reaction := event.Reaction // スタンプ名
 						user := event.User         // ユーザーID
+						itemUser := event.ItemUser // 投稿者
+
+						if botId != itemUser {
+							log.Printf("Botに対してのスタンプじゃあねぇなあ！")
+							return
+						}
 
 						userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
 
