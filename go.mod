@@ -3,6 +3,7 @@ module hackz-inc/hackathon-dozan-slack-bot
 go 1.17
 
 require (
+	cloud.google.com/go/firestore v1.6.1
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/slack-go/slack v0.9.5
@@ -11,7 +12,6 @@ require (
 
 require (
 	cloud.google.com/go v0.97.0 // indirect
-	cloud.google.com/go/firestore v1.6.1 // indirect
 	cloud.google.com/go/storage v1.18.2 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.2.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect

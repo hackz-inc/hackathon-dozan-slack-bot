@@ -86,6 +86,8 @@ func main() {
 						reaction := event.Reaction // スタンプ名
 						user := event.User         // ユーザーID
 
+						log.Println(event)
+
 						userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
 						if err != nil {
 							log.Println(err)
