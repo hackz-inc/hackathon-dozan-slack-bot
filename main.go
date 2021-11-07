@@ -87,13 +87,11 @@ func main() {
 						user := event.User         // ユーザーID
 
 						userInfo, err := api.GetUserInfo(user) // ユーザー情報の取得
-
 						if err != nil {
 							log.Println(err)
 						}
 
 						snapshot, firestoreErr := client.Collection("users").Doc(userInfo.ID).Get(ctx)
-
 						if firestoreErr != nil {
 							fmt.Println("Failed adding alovelace:", firestoreErr)
 						}
@@ -103,14 +101,22 @@ func main() {
 							getUserFromFirestore := snapshot.Data()
 
 							if res, state := getUserFromFirestore["technology"].([]interface{}); state {
+								for _, v := range res {
+									if v == reaction {
+										fmt.Println("スタンプが重複しているよ")
+										return
+									}
+								}
+
 								technology := append(res, reaction)
 
 								client.Collection("users").Doc(userInfo.ID).Set(ctx, map[string]interface{} {
 									"technology": technology,
 								}, firestore.MergeAll)
 							}
+
 							fmt.Println("データあるルート")
-							break
+							return
 						}
 
 						var initialTechnology []string
@@ -125,7 +131,7 @@ func main() {
 							"technology": technology,
 						})
 
-						if(err != nil) {
+						if err != nil {
 							fmt.Println("Failed adding alovelace:", err)
 						}
 
