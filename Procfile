@@ -1,1 +1,1 @@
-ps:scale web=1
+web: bin/hackathon-dozan-slack-bot
