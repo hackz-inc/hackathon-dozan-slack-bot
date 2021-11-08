@@ -1,1 +1,1 @@
-web: hackathon-dozan-slack-bot
+heroku ps:scale web=1
