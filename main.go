@@ -226,7 +226,7 @@ func main() {
 	log.Println("[INFO] Server listening")
 	port := os.Getenv("PORT")
 
-	if err := http.ListenAndServe(port, nil); err != nil {
+	if err := http.ListenAndServe(":" + port, nil); err != nil {
 		log.Fatal(err)
 	}
 }
