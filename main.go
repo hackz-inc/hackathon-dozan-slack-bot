@@ -243,7 +243,7 @@ func main() {
 									return
 								}
 							case "tech":
-								if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで欲しいっチュ！！！\n（ないものは自分で追加してね！）", false)); err != nil {
+								if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで欲しいっチュ！！！\n（押されてないものは自分で追加してね！）", false)); err != nil {
 									log.Println(err)
 									w.WriteHeader(http.StatusInternalServerError)
 
@@ -252,7 +252,7 @@ func main() {
 						}
 
 					case *slackevents.MessageEvent:
-						if event.Text == "今回使用している技術をスタンプで欲しいっチュ！！！\n（ないものは自分で追加してね！）" {
+						if event.Text == "今回使用している技術をスタンプで欲しいっチュ！！！\n（押されてないものは自分で追加してね！）" {
 							ref := slack.NewRefToMessage(event.Channel, event.TimeStamp)
 
 							for _, value := range SlackReactionTechs {
