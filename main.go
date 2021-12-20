@@ -19,6 +19,35 @@ import (
 )
 
 func main() {
+	var SlackReactionTechs = []string{
+	"html5",
+	"css3",
+	"sass",
+	"javascript",
+	"typescript",
+	"angular",
+	"nuxt",
+	"nextjs",
+	"node",
+	"ruby_on_rails",
+	
+	"java",
+	"php",
+	"python",
+	"django",
+	"c_sharp",
+	"unity",
+	"swift",
+	"kotlin",
+	"flutter",
+	"aws",
+
+	"azure",
+	"gcp",
+	"docker",
+	"firebase",
+}
+
 	// ctxを再利用する為下記のように書きます。
 	ctx := context.Background()
 	sa := option.WithCredentialsFile("serviceAccountKey.json")
@@ -81,6 +110,7 @@ func main() {
 			case slackevents.CallbackEvent: // コールバックイベントの場合の処理
 				innerEvent := eventsAPIEvent.InnerEvent
 
+				log.Println("ahiahi1")
 				// イベントタイプで分岐
 				switch event := innerEvent.Data.(type) {
 					case *slackevents.ReactionAddedEvent:
@@ -212,12 +242,23 @@ func main() {
 									w.WriteHeader(http.StatusInternalServerError)
 									return
 								}
-							case "techTag":
-								if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで教えてね！！！！！！！！", false)); err != nil {
+							case "tech":
+								if _, _, err := api.PostMessage(event.Channel, slack.MsgOptionText("今回使用している技術をスタンプで欲しいっチュ！！！\n（ないものは自分で追加してね！）", false)); err != nil {
 									log.Println(err)
 									w.WriteHeader(http.StatusInternalServerError)
+
 									return
 								}
+						}
+
+					case *slackevents.MessageEvent:
+						if event.Text == "今回使用している技術をスタンプで欲しいっチュ！！！\n（ないものは自分で追加してね！）" {
+							ref := slack.NewRefToMessage(event.Channel, event.TimeStamp)
+
+							for _, value := range SlackReactionTechs {
+								log.Println(value)
+								api.AddReaction(value, ref)
+							}
 						}
 				}
 		}
