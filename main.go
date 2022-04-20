@@ -18,30 +18,31 @@ import (
 	"google.golang.org/api/option"
 )
 
+// １人が押すことができるスタンプの最大数が24個
 func main() {
 	var SlackReactionTechs = []string{
 	"html5",
 	"css3",
-	"sass",
 	"javascript",
 	"typescript",
-	"angular",
+	"vue",
 	"nuxt",
+	"react",
 	"nextjs",
 	"node",
 	"ruby_on_rails",
-	
+		
 	"java",
 	"php",
+	"laravel",
 	"python",
 	"django",
 	"c_sharp",
 	"unity",
 	"swift",
-	"kotlin",
 	"flutter",
 	"aws",
-
+		
 	"azure",
 	"gcp",
 	"docker",
@@ -252,7 +253,7 @@ func main() {
 						}
 
 					case *slackevents.MessageEvent:
-						if event.Text == "今回使用している技術をスタンプで欲しいっチュ！！！\n（押されてないものは自分で追加してね！）" {
+						if event.Text == "今回使用している技術をスタンプで欲しいっチュ！！！\n（押されてないものは、自分でスタンプを押してね！）" {
 							ref := slack.NewRefToMessage(event.Channel, event.TimeStamp)
 
 							for _, value := range SlackReactionTechs {
