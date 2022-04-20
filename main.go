@@ -18,6 +18,7 @@ import (
 	"google.golang.org/api/option"
 )
 
+// １人が押すことができるスタンプの最大数が24個
 func main() {
 	var SlackReactionTechs = []string{
 	"html5",
